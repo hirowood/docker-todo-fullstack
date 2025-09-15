@@ -35,7 +35,7 @@ services:
       # Rails設定
       - RAILS_ENV=${RAILS_ENV:-development}
       - RAILS_MAX_THREADS=${RAILS_MAX_THREADS:-5}
-      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - SECRET_KEY_BASE=development_secret_key_12345
       - RAILS_LOG_LEVEL=${LOG_LEVEL:-debug}
     depends_on:
       - db

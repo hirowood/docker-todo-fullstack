@@ -582,7 +582,7 @@ MIT License
 
 ## 👥 作者
 
-- **開発者名** - [GitHub](https://github.com/your-username)
+- **開発者名** - [Hirowood](https://github.com/hirowood)
 
 ## 📞 サポート
 
