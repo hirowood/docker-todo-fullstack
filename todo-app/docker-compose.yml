@@ -1,0 +1,68 @@
+
+services:
+  db:
+    image: mysql:8.0
+    platform: linux/amd64
+    environment:
+      # ${変数名:-デフォルト値} の形式
+      # .envファイルから読み込み、なければデフォルト値を使用
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-password}
+      MYSQL_DATABASE: ${DB_NAME:-todo_development}
+      MYSQL_USER: ${DB_USER:-todo_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-todo_password}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - todo-network
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    ports:
+      - "${BACKEND_PORT:-3001}:3000"
+    volumes:
+      - ./backend:/app
+    environment:
+      # データベース接続設定
+      - DATABASE_HOST=db
+      - DATABASE_USERNAME=${DB_USER:-todo_user}
+      - DATABASE_PASSWORD=${DB_PASSWORD:-todo_password}
+      - DATABASE_NAME=${DB_NAME:-todo_development}
+      
+      # Rails設定
+      - RAILS_ENV=${RAILS_ENV:-development}
+      - RAILS_MAX_THREADS=${RAILS_MAX_THREADS:-5}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_LOG_LEVEL=${LOG_LEVEL:-debug}
+    depends_on:
+      - db
+    networks:
+      - todo-network
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=${API_URL:-http://localhost:3001}
+      - NODE_ENV=${NODE_ENV:-development}
+      - WATCHPACK_POLLING=${WATCHPACK_POLLING:-false}
+    depends_on:
+      - backend
+    networks:
+      - todo-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  todo-network:
+    driver: bridge
